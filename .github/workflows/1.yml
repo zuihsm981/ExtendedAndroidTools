@@ -7,26 +7,19 @@ jobs:
   build_bpftrace_static:
     name: Build static bpftrace binaries
     runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        env:
+          - ARCH: arm64
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: sudo ./scripts/jammy-install-deps.sh
       - name: Setup NDK
-        run: bash ./scripts/download-ndk.sh
+        run: ./scripts/download-ndk.sh
       - name: Build
-        run: |
-          NDK_DIR=$(ls -d android-ndk-* | head -1)
-          cd $NDK_DIR/toolchains/llvm/prebuilt/
-          if [ -d linux-x86_64 ] && [ ! -e linux-x86 ]; then
-            ln -s linux-x86_64 linux-x86
-          fi
-          cd -
-          make bpftrace \
-            NDK_PATH=$PWD/$NDK_DIR \
-            NDK_ARCH=arm64 \
-            STATIC_LINKING=true \
-            LLVM_BPF_ONLY=true
+        run: make bpftrace NDK_PATH=`pwd`/android-ndk-r27b NDK_ARCH=${{ matrix.env['ARCH'] }} STATIC_LINKING=true LLVM_BPF_ONLY=true
       - uses: actions/upload-artifact@v4
         with:
-          name: bpftrace-android-arm64
-          path: out/android/arm64/bin/bpftrace
+          name: bpftrace-android-${{ matrix.env['ARCH'] }}
+          path: out/android/${{ matrix.env['ARCH'] }}/bin/bpftrace
