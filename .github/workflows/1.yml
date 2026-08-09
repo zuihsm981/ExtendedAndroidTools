@@ -6,7 +6,7 @@ on:
 jobs:
   build_bpftrace_static:
     name: Build static bpftrace binaries
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         env:
